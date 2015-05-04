@@ -1,0 +1,29 @@
+{
+  "name": "category",
+  "description": "Files/Directorys categorization tool.",
+  "version": "0.1.2",
+  "main": "bin/category",
+  "scripts": {
+    "test": "node bin/category -i '^IMG_(\\d{4})(\\d{2})(\\d{2})_\\d{6}(\\.jpg)?$' -o '$1-$2-$3' -f ./test ./test"
+  },
+  "bin": {
+    "category": "./bin/category"
+  },
+  "keywords": [
+    "category",
+    "categorization",
+    "file",
+    "directory",
+    "classification",
+    "archive"
+  ],
+  "dependencies": {
+    "commander": "^2.8.1",
+    "fs-extra": "^0.18.2"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nswbmw/node-category.git"
+  }
+}

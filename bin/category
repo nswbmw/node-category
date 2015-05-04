@@ -1,0 +1,67 @@
+#!/usr/bin/env node
+ 
+/**
+ * Module dependencies.
+ */
+ 
+var path = require('path');
+var fs = require('fs');
+var child_process = require('child_process');
+var fse = require('fs-extra');
+var program = require('commander');
+var pkg = require('../package.json');
+ 
+program
+  .version(pkg.version)
+  .usage('<src> <des>')
+  .description('Files/Directorys categorization tool.')
+  .option('-i, --input [regexp]', 'regexp of file to category (required)')
+  .option('-o, --output [regexp]', 'regexp of dir to generate (required)')
+  .option('-f, --force', 'whether to delete original file');
+
+program.on('--help', function(){
+  console.log('  Example:');
+  console.log('');
+  console.log('    $ category -i "^IMG_(\\d{4})(\\d{2})(\\d{2})_\\d{6}\\.jpg$" -o "$1-$2-$3" ./test ./test');
+  console.log('');
+});
+
+program.parse(process.argv);
+
+var input = new RegExp(program.input);
+var output = program.output;
+var srcArr = path.join(process.cwd(), program.args[0] || './').split(',');
+var des = path.join(process.cwd(), program.args[1] || './');
+var force = program.force;
+if (!input || !output) program.help();
+
+function category() {
+  var desArr = {};
+  srcArr.forEach(function (src) {
+    try {
+      fs.readdirSync(src).forEach(function (filename) {
+        if (filename.match(input)) {
+          var desDir = path.join(des, filename.replace(input, output));
+          fse.ensureDirSync(desDir);
+          fse.copySync(path.join(src, filename), path.join(desDir, filename));
+          desArr[desDir] = true;
+
+          if (force) {
+            fse.removeSync(path.join(src, filename));
+          }
+        }
+      });
+    } catch (e) {
+      console.error(e.message + ' ignored...\n');
+    }
+  });
+
+  // show results
+  try {
+    Object.keys(desArr).forEach(function (desDir) {
+      console.log(child_process.execSync('tree -L 2 -FC ' + desDir, {encoding: 'utf8'}));
+    });
+  } catch (e) { /* ignored */}
+}
+
+category();
